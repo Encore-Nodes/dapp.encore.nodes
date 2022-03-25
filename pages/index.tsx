@@ -327,12 +327,13 @@ const Home: NextPage = () => {
     <div className="container px-4 mx-auto py-16 h-auto min-h-screen flex flex-col">
       <Head>
         <title>Core Nodes - Claim USDC.e rewards</title>
-        <meta property="og:title" content="Core Nodes - Claim usdc.e rewards" key="title" />
+        <meta property="og:title" content="Encore Nodes - Video meets Streaming" key="title" />
         <meta
           property="og:description"
-          content="Core Nodes - Sustainable Passive Income. Built on the Avalanche Network. Earn Passive Rewards in $USDC and 0.9% Rewards from NAAS"
+          content="$Encore is an ambitious project pairing a video streaming platform with Nodes-as-a-service."
           key="description"
         />
+        <meta property="og:image" content="/thumbnail.jpg" key="image" />
         <link rel="shortcut icon" href="/favicon.png" />
       </Head>
       {modalOpen && <Modal toggleModal={toggleModal} onCreateNodeHandler={handleCreateNode} />}
