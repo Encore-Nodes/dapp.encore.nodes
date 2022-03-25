@@ -1,5 +1,5 @@
-//export const AVAX_C_ID = 43114;
-export const AVAX_C_ID = 1337;
+export const AVAX_C_ID = 43114;
+//export const AVAX_C_ID = 1337;
 export const RPC_URLS = {
   1: "https://ethereumnodelight.app.runonflux.io",
   56: "https://bsc-dataseed.binance.org/",
