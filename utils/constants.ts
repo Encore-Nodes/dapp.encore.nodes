@@ -14,7 +14,7 @@ export const RPC_URLS = {
 };
 
 export const ENCORE_DATA = {
-  address: "0xd5e23742c2fa216909ee11abd75f9551154ee268",
+  address: "0x277a8ba403abf080dabc501964c6802acc6dd9bf",
   abi: [
     "function getTotalCreatedNodes() public view returns (uint256)",
     "function getNodeNumberOf(address account) public view returns (uint256)",
