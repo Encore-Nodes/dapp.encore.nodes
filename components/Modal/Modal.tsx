@@ -35,6 +35,8 @@ const Modal: React.FC<{
       props.toggleModal();
     } catch (errMsg) {
       toast((t) => <ToastError t={t} text={(errMsg as any).toString()} />);
+    } finally {
+      setLoading(false);
     }
   };
 
