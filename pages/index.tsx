@@ -372,14 +372,14 @@ const Home: NextPage = () => {
           <div className="md:hidden w-full sm:w-64 md:w-auto">
           <ButtonLink
            className="w-full sm:w-64 md:w-auto"
-            href="https://traderjoexyz.com/trade?outputCurrency=0xe1c1a8dcd6ae8b17cc2923a82ddb9bf8827095b7#/"
+            href="https://traderjoexyz.com/trade?outputCurrency=0x277a8ba403abf080dabc501964c6802acc6dd9bf#/"
             text="Buy $ENCORE"
           />
           </div>
         </div>
         <div className="hidden md:block">
           <ButtonLink
-            href="https://traderjoexyz.com/trade?outputCurrency=0xe1c1a8dcd6ae8b17cc2923a82ddb9bf8827095b7#/"
+            href="https://traderjoexyz.com/trade?outputCurrency=0x277a8ba403abf080dabc501964c6802acc6dd9bf#/"
             text="Buy $ENCORE"
           />
         </div>
