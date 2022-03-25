@@ -34,7 +34,7 @@ export const ENCORE_DATA = {
 };
 
 export const ENCORE_WAVAX_LP_DATA = {
-  address: "0x12DbB50F791cE2908A2b73477a6e9554fA6794C5",
+  address: "0xe095bBd02Df9FA6Aa40F93e4854F26192BdE3628",
   abi: ["function getReserves() public view returns (uint, uint, uint)"],
 };
 

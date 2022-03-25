@@ -11,8 +11,7 @@ const Stats: React.FC<{
   <div className="grow flex flex-col space-y-6">
     <StatRow>
       <Stat title="Route: $ENCORE -> WAVAX -> USDC.e">
-        {/* <p className="text-2xl font-bold">{toUSD(props.tokenPrice, 6)} </p> */}
-        <p className="text-2xl font-bold">{toUSD("0", 6)} </p>
+        <p className="text-2xl font-bold">{toUSD(props.tokenPrice, 2)} </p>
         <p>
           Current <span className="text-primary">$ENCORE</span> token price in USDC.e
         </p>
