@@ -35,9 +35,8 @@ const Modal: React.FC<{
       setLoading(false);
       props.toggleModal();
     } catch (errMsg) {
+      setLoading(false);
       toast((t) => <ToastError t={t} text={(errMsg as any).toString()} />);
-    } finally {
-      if (loading) setLoading(false);
     }
   };
 
@@ -85,7 +84,7 @@ const Modal: React.FC<{
                 primary
                 text="Create Your Node"
                 onHandleClick={handleClick}
-                disabled={name.length === 0 || loading}
+                disabled={name.length === 0}
                 loading={loading}
                 icon={<Plus />}
               />
