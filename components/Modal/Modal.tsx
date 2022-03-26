@@ -32,11 +32,12 @@ const Modal: React.FC<{
       e.preventDefault();
       await props.onCreateNodeHandler(name);
       setName("");
+      setLoading(false);
       props.toggleModal();
     } catch (errMsg) {
       toast((t) => <ToastError t={t} text={(errMsg as any).toString()} />);
     } finally {
-      setLoading(false);
+      loading && setLoading(false);
     }
   };
 

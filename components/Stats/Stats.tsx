@@ -7,6 +7,7 @@ const Stats: React.FC<{
   ENCORERewardsAmount: string;
   ENCORETokenBalance: string;
   tokenPrice: string;
+  dailyRewards: number;
 }> = (props) => (
   <div className="grow flex flex-col space-y-6">
     <StatRow>
@@ -24,12 +25,23 @@ const Stats: React.FC<{
           Your current <span className="text-primary mt-2">$ENCORE</span> token balance
         </p>
       </Stat>
-    </StatRow>
-    <StatRow>
       <Stat>
         <p className="text-2xl font-bold">{props.totalCreatedNodes}</p>
         <p>
           Total <span className="text-primary">$ENCORE</span> Nodes
+        </p>
+      </Stat>
+    </StatRow>
+    <StatRow>
+      <Stat>
+        <p className="text-2xl font-bold">
+          {" "}
+          {new Intl.NumberFormat("en-US", { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(
+            props.dailyRewards
+          )}
+        </p>
+        <p>
+          Your daily <span className="text-primary">$ENCORE</span> rewards
         </p>
       </Stat>
 

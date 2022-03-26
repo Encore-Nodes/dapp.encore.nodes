@@ -2,28 +2,28 @@ import { useRef, useState, useEffect, useMemo } from "react";
 import type { NextPage } from "next";
 import Head from "next/head";
 import Web3Modal from "web3modal";
-import { ethers } from "ethers";
+import { BigNumber, Contract, ethers } from "ethers";
 import { Web3Provider } from "@ethersproject/providers";
 import WalletConnectProvider from "@walletconnect/web3-provider";
 import toast, { useToasterStore } from "react-hot-toast";
 
 import { EncoresIcon, Plus } from "../components/Icons/index";
-import { Button, ButtonLink } from "../components/Buttons/index"
-import { Stats }  from "../components/Stats/index";
+import { Button, ButtonLink } from "../components/Buttons/index";
+import { Stats } from "../components/Stats/index";
 import { NavBar } from "../components/NavBar/index";
 import { ToastError, ToastInfo, ToastSuccess } from "../components/Toasts/index";
 import { Modal } from "../components/Modal/index";
 import { Table } from "../components/Table/index";
 
-import { bnToString, getTokenPrice,  toHex } from "../utils/uitls";
+import { bnToString, getTokenPrice, toHex } from "../utils/uitls";
 import { AVAX_C_ID, RPC_URLS, ENCORE_DATA } from "../utils/constants";
 
 type NodeEntity = {
   name: string;
   rewards: string;
   lastClaimed: string;
-  createTime: string
-}
+  createTime: string;
+};
 
 const Home: NextPage = () => {
   const web3ModalRef = useRef<Web3Modal>();
@@ -31,15 +31,22 @@ const Home: NextPage = () => {
   const [ethersProvider, setEthersProvider] = useState<Web3Provider>();
   const [account, setAccount] = useState("");
   const [chainId, setChainId] = useState<string>();
-  const [ENCORELoading, setENCORELoading] = useState(false);
+  const [claimAllLoading, setClaimAllLoading] = useState(false);
   const [totalCreatedNodes, setTotalCreatedNodes] = useState("0");
-  const [userNodesNumber, setUserNodesNumber] = useState("0");
+
+  const [tokenPrice, setTokenPrice] = useState("0");
   const [ENCORERewardsAmount, setENCORERewardsAmount] = useState("0");
   const [ENCORETokenBalance, setENCORETokenBalance] = useState("0");
-  const [tokenPrice, setTokenPrice] = useState("0")
+
   const [modalOpen, setModalOpen] = useState(false);
   const [isInit, setIsInit] = useState(true);
-  const [userNodes, setUserNodes] = useState<NodeEntity[]>([])
+  const [userNodes, setUserNodes] = useState<NodeEntity[]>([]);
+  const [rewardsData, setRewardsData] = useState({ perNode: 0, claimTime: 0 });
+
+  const dailyRewards = useMemo(() => {
+    const rewards = rewardsData.claimTime * rewardsData.perNode * userNodes.length * 86400;
+    return Math.round(rewards * 10) / 10;
+  }, [userNodes.length]);
 
   const isAvaxChain = useMemo(() => chainId === toHex(AVAX_C_ID), [chainId]);
   const { toasts } = useToasterStore();
@@ -56,10 +63,9 @@ const Home: NextPage = () => {
 
   const resetState = () => {
     setUserNodes([]);
-    setENCORERewardsAmount("0")
-    setENCORETokenBalance("0")
-    setUserNodesNumber("0")
-  }
+    setENCORERewardsAmount("0");
+    setENCORETokenBalance("0");
+  };
 
   /**
    * @dev connects the users wallet
@@ -118,7 +124,7 @@ const Home: NextPage = () => {
    * @dev claims all the ENCORE node rewards
    */
   const cashoutAllNodesRewards = async () => {
-    setENCORELoading(true);
+    setClaimAllLoading(true);
     const signer = ethersProvider?.getSigner();
     const contract = new ethers.Contract(ENCORE_DATA.address, ENCORE_DATA.abi, signer);
 
@@ -131,7 +137,7 @@ const Home: NextPage = () => {
       console.error("CASHOUTALL ERR: ", err);
       toast((t) => <ToastError t={t} text={err.message} />);
     } finally {
-      setENCORELoading(false);
+      setClaimAllLoading(false);
     }
   };
 
@@ -142,18 +148,17 @@ const Home: NextPage = () => {
     try {
       const tx = await contract.cashoutReward(createTime);
       await tx.wait();
-      await fetchContractData()
+      await fetchContractData();
       toast((t) => <ToastSuccess t={t} text="Node rewards claimed successfully!" />);
-    } catch(err: any) {
-      if(err.data && err.data.message) {
+    } catch (err: any) {
+      if (err.data && err.data.message) {
         toast((t) => <ToastError t={t} text={(err as any).data.message} />);
       } else {
         toast((t) => <ToastError t={t} text={(err as any).message} />);
       }
-      console.error(err)
-    
-    } 
-  }
+      console.error(err);
+    }
+  };
 
   /**
    * @dev fetches core nodes token balance and unpaid earnings
@@ -162,64 +167,68 @@ const Home: NextPage = () => {
     // get ENCORE data
     const signer = await ethersProvider?.getSigner();
     const address = await signer?.getAddress();
-    const tnodes = new ethers.Contract(ENCORE_DATA.address, ENCORE_DATA.abi, signer);
-    const _totalCreatedNodes = await tnodes.getTotalCreatedNodes();
-    const _ENCORETokenBalance = await tnodes.balanceOf(address);
+    const encore = new ethers.Contract(ENCORE_DATA.address, ENCORE_DATA.abi, signer);
+    const _totalCreatedNodes = await encore.getTotalCreatedNodes();
+    const _ENCORETokenBalance = await encore.balanceOf(address);
     const _tokenPrice = await getTokenPrice(ethersProvider);
+
+    // fetch rewardsData if not already fetched
+    if (rewardsData.claimTime == 0 || rewardsData.perNode == 0) {
+      const _claimTime = await encore.getClaimTime();
+      const _perNode = await encore.getRewardPerNode();
+      setRewardsData({ claimTime: Number(bnToString(_claimTime, 0)), perNode: Number(bnToString(_perNode, 18)) });
+    }
+
     // needs to catch no-node owner error
     try {
-      const _userNodesNumber = await tnodes.getNodeNumberOf(address);
       // fetch total reward amount
-      const _ENCORERewardsAmount = await tnodes.getRewardAmount();
+      const _ENCORERewardsAmount = await encore.getRewardAmount();
       // fetch nodes data
-      const _nodeNames = await tnodes.getNodesNames();
-      const _nodeRewards = await tnodes.getNodesRewards();
-      const _nodeLastClaims = await tnodes.getNodesLastClaims();
-      const _nodesCreatime = await tnodes.getNodesCreatime();
+      const _nodeNames = await encore.getNodesNames();
+      const _nodeRewards = await encore.getNodesRewards();
+      const _nodeLastClaims = await encore.getNodesLastClaims();
+      const _nodesCreatime = await encore.getNodesCreatime();
       // split the names
       const names = _nodeNames.split("#");
-      const rewards = _nodeRewards.split("#")
+      const rewards = _nodeRewards.split("#");
       const lastClaimed = _nodeLastClaims.split("#");
       const nodesCreateTime = _nodesCreatime.split("#");
 
       const _userNodes = [];
-      for(let i = 0; i < names.length; i++) {
+      for (let i = 0; i < names.length; i++) {
         _userNodes.push({
           name: names[i],
           rewards: rewards[i],
           lastClaimed: lastClaimed[i],
-          createTime: nodesCreateTime[i]
-        })
-      } 
-      setUserNodes(_userNodes)
+          createTime: nodesCreateTime[i],
+        });
+      }
+      setUserNodes(_userNodes);
       setENCORERewardsAmount(bnToString(_ENCORERewardsAmount, 18));
-      setUserNodesNumber(_userNodesNumber.toString());
     } catch (err: any) {
       console.error(err);
     }
-    setTokenPrice(_tokenPrice)
+    setTokenPrice(_tokenPrice);
     setENCORETokenBalance(bnToString(_ENCORETokenBalance.toString(), 18));
     setTotalCreatedNodes(_totalCreatedNodes.toString());
-    
   };
 
-  /** 
-  * @dev toggles modal
-  */
-     const toggleModal = () => {
-      setModalOpen((prev) => !prev);
-    };
-  
-  /** 
-  * @dev creates a node with a name
-  * @param name the name of the node
-  */
+  /**
+   * @dev toggles modal
+   */
+  const toggleModal = () => {
+    setModalOpen((prev) => !prev);
+  };
+  /**
+   * @dev creates a node with a name
+   * @param name the name of the node
+   */
   const handleCreateNode = async (name: string) => {
     try {
       const signer = await ethersProvider?.getSigner();
-      const tnodes = new ethers.Contract(ENCORE_DATA.address, ENCORE_DATA.abi, signer);
-      const tx = await tnodes.createNodeWithTokens(name);
-      await tx.wait()
+      const encore = new ethers.Contract(ENCORE_DATA.address, ENCORE_DATA.abi, signer);
+      const tx = await encore.createNodeWithTokens(name);
+      await tx.wait();
       await fetchContractData();
       toast((t) => <ToastSuccess t={t} text={"Node created successfully!"} />);
     } catch (err: any) {
@@ -280,7 +289,7 @@ const Home: NextPage = () => {
         if (accounts.length === 0) {
           await web3ModalRef.current?.clearCachedProvider();
         }
-        resetState()
+        resetState();
         setAccount(accounts[0]);
       };
 
@@ -305,10 +314,10 @@ const Home: NextPage = () => {
     }
   }, [provider]);
 
-  /** 
-  * @dev show connect wallet error if not connected
-  * or dismiss the notification
-  */
+  /**
+   * @dev show connect wallet error if not connected
+   * or dismiss the notification
+   */
   useEffect(() => {
     if (!isInit) {
       if (errorMsg.length > 0) {
@@ -341,12 +350,13 @@ const Home: NextPage = () => {
       <div className="flex flex-col grow space-y-6 pt-6 md:pt-8 lg:pt-12">
         <Stats
           totalCreatedNodes={totalCreatedNodes}
-          userNodesNumber={userNodesNumber}
+          userNodesNumber={userNodes.length.toString()}
           ENCORERewardsAmount={ENCORERewardsAmount}
           ENCORETokenBalance={ENCORETokenBalance}
           tokenPrice={tokenPrice}
+          dailyRewards={dailyRewards}
         />
-        <Table userNodes={userNodes} cashoutNodeRewards={cashoutNodeRewards}  />
+        <Table userNodes={userNodes} cashoutNodeRewards={cashoutNodeRewards} />
       </div>
       <div className="flex justify-center md:justify-between items-center pt-10">
         <div className="flex space-y-4 md:space-y-0 flex-col md:flex-row w-full sm:w-auto justify-center items-center md:space-x-4 flex-wrap">
@@ -355,7 +365,7 @@ const Home: NextPage = () => {
             text="Claim All"
             className="w-full sm:w-64 md:w-auto"
             onHandleClick={cashoutAllNodesRewards}
-            loading={ENCORELoading}
+            loading={claimAllLoading}
             icon={<EncoresIcon />}
             disabled={!isAvaxChain}
           />
@@ -370,11 +380,11 @@ const Home: NextPage = () => {
             disabled={!isAvaxChain}
           />
           <div className="md:hidden w-full sm:w-64 md:w-auto">
-          <ButtonLink
-           className="w-full sm:w-64 md:w-auto"
-            href="https://traderjoexyz.com/trade?outputCurrency=0x277a8ba403abf080dabc501964c6802acc6dd9bf#/"
-            text="Buy $ENCORE"
-          />
+            <ButtonLink
+              className="w-full sm:w-64 md:w-auto"
+              href="https://traderjoexyz.com/trade?outputCurrency=0x277a8ba403abf080dabc501964c6802acc6dd9bf#/"
+              text="Buy $ENCORE"
+            />
           </div>
         </div>
         <div className="hidden md:block">

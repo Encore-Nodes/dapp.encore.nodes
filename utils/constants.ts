@@ -1,5 +1,5 @@
-export const AVAX_C_ID = 43114;
-//export const AVAX_C_ID = 1337;
+//export const AVAX_C_ID = 43114;
+export const AVAX_C_ID = 1337;
 export const RPC_URLS = {
   1: "https://ethereumnodelight.app.runonflux.io",
   56: "https://bsc-dataseed.binance.org/",
@@ -25,11 +25,11 @@ export const ENCORE_DATA = {
     "function getNodesNames() public view returns (string memory)",
     "function getNodesRewards() public view returns (string memory)",
     "function getNodesLastClaims() public view returns (string memory)",
-    "function getTotalStakedReward() public view returns (uint256)",
-    "function publiDistriRewards() public",
     "function balanceOf(address owner) view returns (uint balance)",
     "function getNodesCreatime() public view returns (string memory)",
     "function cashoutReward(uint256 blocktime) public",
+    "function getClaimTime() public view returns (uint256)",
+    "function getRewardPerNode() public view returns (uint256)",
   ],
 };
 
