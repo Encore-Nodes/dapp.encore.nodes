@@ -55,10 +55,10 @@ const NavBar: React.FC<{ onConnect: any; isConnected: boolean }> = (props) => {
 
       <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-6 lg:space-x-10 text-slate-400 dark:text-[#62596D] items-center justify-center mt-6 md:mt-0">
         <div className="flex space-x-6 items-center">
-          <NavItem title="Website" href="https://core-nodes.com/" icon={<Home />} />
-          <NavItem title="Twitter" href="https://twitter.com/core_nodes" icon={<Twitter />} newTab={true} />
+          <NavItem title="Website" href="https://core-nodes.online/" icon={<Home />} />
+          <NavItem title="Twitter" href="https://twitter.com/EncoreNodes" icon={<Twitter />} newTab={true} />
 
-          <NavItem title="Discord" href="https://discord.gg/CmtkBh6H" icon={<Discord />} newTab={true} />
+          <NavItem title="Discord" href="http://discord.gg/ybENpXGctB" icon={<Discord />} newTab={true} />
 
           <NavItem
             title="Gitbook"
